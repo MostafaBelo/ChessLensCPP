@@ -66,7 +66,7 @@ bool WakeupModule::is_wakeup(const cv::Mat& img,
         past_hist = past_frame_hist_;
     } else {
         past_frame_hist_ = current_hist;
-        return True;
+        return true;
     }
 
     bool ret = true;
