@@ -114,6 +114,7 @@ cv::Mat ImageProvider::take_image() {
                 std::chrono::duration<double>(interval_ - elapsed));
         }
     }
+    last_img_time_ = std::chrono::steady_clock::now();
 
     cv::Mat img;
 
@@ -142,8 +143,6 @@ cv::Mat ImageProvider::take_image() {
     if (postprocess_)
         img = postprocess_(img);
 
-    last_img_time_ = std::chrono::steady_clock::now();
-    // cv::imwrite("Images/original_image.png", img);
     return img;
 }
 
