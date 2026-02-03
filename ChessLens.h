@@ -49,6 +49,7 @@ struct ChessLensConfig {
  * Average timing statistics
  */
 struct AvgTimes {
+    double img_capture = 0.0;
     double load = 0.0;
     double board_detection = 0.0;
     double wakeup = 0.0;
@@ -56,6 +57,7 @@ struct AvgTimes {
     double piece_recognition = 0.0;
     double hmm = 0.0;
 
+    int img_capture_count = 0;
     int load_count = 0;
     int board_count = 0;
     int wakeup_count = 0;

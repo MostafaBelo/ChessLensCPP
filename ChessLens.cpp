@@ -260,10 +260,15 @@ void ChessLensGame1::clear() {
 }
 
 std::vector<float> ChessLensGame1::operate() {
+    auto t1 = std::chrono::high_resolution_clock::now();
     cv::Mat img = camera_->take_image();
     if (img.empty()) {
         return {};
     }
+    auto t2 = std::chrono::high_resolution_clock::now();
+    avg_times.img_capture += std::chrono::duration<double>(t2 - t1).count();
+    avg_times.img_capture_count++;
+    
     return set_img(img);
 }
 
@@ -273,6 +278,7 @@ std::vector<float> ChessLensGame1::set_img(const cv::Mat& img) {
     current_img_->load_image(img);
     
     auto t2 = std::chrono::high_resolution_clock::now();
+    avg_times.load_count++;
     
     auto result = process_img();
     
@@ -365,7 +371,7 @@ std::vector<float> ChessLensGame1::process_img() {
     // Piece Recognition
     auto [piece_matrix, fen] = current_img_->recognize_pieces();
     auto probs = prep_probs(piece_matrix);
-    avg_time.piece_count++;
+    avg_times.piece_count++;
     
     auto t5 = std::chrono::high_resolution_clock::now();
     avg_times.piece_recognition += std::chrono::duration<double>(t5 - t4).count();
@@ -505,7 +511,7 @@ void ChessLensGame2::operate(const std::vector<float>& piece_matrix) {
     auto t2 = std::chrono::high_resolution_clock::now();
     
     avg_times.hmm += std::chrono::duration<double>(t2 - t1).count();
-    avg_time.hmm_count++;
+    avg_times.hmm_count++;
     avg_times.count++;
 }
 

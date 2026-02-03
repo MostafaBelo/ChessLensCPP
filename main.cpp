@@ -116,6 +116,8 @@ int main(int argc, char** argv) {
             
             // Process frame from camera
             auto probs = game1.operate();
+            auto t3 = std::chrono::high_resolution_clock::now();
+            cout << "Game1: " << std::chrono::duration<double>(t3 - t1).count() * 1000 << "\n";
             
             // Update bindings
             game2.update_bindings();
@@ -135,6 +137,7 @@ int main(int argc, char** argv) {
             game2.operate(probs);
             
             auto t2 = std::chrono::high_resolution_clock::now();
+            cout << "Game2: " << std::chrono::duration<double>(t2 - t3).count() * 1000 << "\n";
             
             double frame_time = std::chrono::duration<double>(t2 - t1).count();
             frame_times.push_back(frame_time);
@@ -165,6 +168,8 @@ int main(int argc, char** argv) {
         
         // Print timing statistics
         std::cout << "\n=== Performance Statistics ===\n";
+        std::cout << "Avg Image Capturing:      " 
+                  << (game1.avg_times.img_capture * 1000.0 / game1.avg_times.img_capture_count) << " ms\n";
         std::cout << "Avg Image Loading:      " 
                   << (game1.avg_times.load * 1000.0 / game1.avg_times.load_count) << " ms\n";
         std::cout << "Avg Board Detection:    " 
