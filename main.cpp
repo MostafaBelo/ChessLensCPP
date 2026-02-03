@@ -37,8 +37,8 @@ void update_fen(const std::string& fen) {
 #ifdef USE_HTTP
     CURL* curl = curl_easy_init();
     if (curl) {
-        // std::string url = "http://10.42.0.0:8000/update_fen?fen=" + fen;
-        std::string url = "http://localhost:8000/update_fen?fen=" + fen;
+        std::string url = "http://10.42.0.1:8000/update_fen?fen=" + fen;
+        // std::string url = "http://localhost:8000/update_fen?fen=" + fen;
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_NOBODY, 1L); // HEAD request
         CURLcode res = curl_easy_perform(curl);
