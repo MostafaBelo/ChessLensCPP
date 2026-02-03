@@ -39,6 +39,21 @@ std::vector<std::string> ImageProvider::load_images(const std::string& dir) {
     return natural_sort(files);
 }
 
+void ImageProvider::setup_pi_camera() {
+    // Raspberry Pi cameras via libcamera/V4L2 
+    // Usually index 0, but we force V4L2 backend
+    cap_.open(0, cv::CAP_V4L2);
+    
+    if (!cap_.isOpened()) {
+        throw std::runtime_error("Failed to open Pi Camera via V4L2. Ensure libcamera is not hogging the device.");
+    }
+
+    // Set resolution (adjust to your Pi camera's native aspect ratio)
+    cap_.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
+    cap_.set(cv::CAP_PROP_FRAME_HEIGHT, 720);
+    cap_.set(cv::CAP_PROP_FPS, 30);
+}
+
 ImageProvider::ImageProvider(CameraType camera,
                              double interval,
                              const std::string& data_dir)
@@ -52,43 +67,36 @@ ImageProvider::ImageProvider(CameraType camera,
             throw std::runtime_error("Failed to open camera");
     }
 
+    else if (camera_ == CameraType::PI || camera_ == CameraType::PI_FISH) {
+        setup_pi_camera();
+
+        if (camera_ == CameraType::PI_FISH) {
+            // Load fisheye calibration
+            cv::FileStorage storage("fisheye_calibration.yaml", cv::FileStorage::READ);
+            if(storage.isOpened()) {
+                cv::Mat K, D;
+                cv::Size img_size;
+                storage["K"] >> K;
+                storage["D"] >> D;
+                storage["img_size"] >> img_size;
+
+                cv::Mat newK, map1, map2;
+                cv::fisheye::estimateNewCameraMatrixForUndistortRectify(K, D, img_size, cv::Mat::eye(3, 3, CV_64F), newK, 1.0);
+                cv::fisheye::initUndistortRectifyMap(K, D, cv::Mat::eye(3, 3, CV_64F), newK, img_size, CV_32FC1, map1, map2);
+
+                postprocess_ = [map1, map2](const cv::Mat& img) {
+                    cv::Mat out;
+                    cv::remap(img, out, map1, map2, cv::INTER_LINEAR, cv::BORDER_CONSTANT);
+                    return out;
+                };
+            }
+        }
+    }
+
     else if (camera_ == CameraType::FILES) {
         if (data_dir.empty() || !fs::is_directory(data_dir))
             throw std::runtime_error("Invalid image directory");
         imgs_to_load_ = load_images(data_dir);
-    }
-
-    else if (camera_ == CameraType::PI_FISH) {
-        // NOTE:
-        // Picamera2 has no official C++ API.
-        // You must either:
-        // 1. Use libcamera directly (recommended)
-        // 2. Wrap Python picamera via IPC
-        // 3. Replace with OpenCV + v4l2
-
-        // Fisheye undistortion example (same math as Python)
-        cv::FileStorage fs("fisheye_calibration.yaml", cv::FileStorage::READ);
-        cv::Mat K, D;
-        cv::Size img_size;
-        fs["K"] >> K;
-        fs["D"] >> D;
-        fs["img_size"] >> img_size;
-
-        cv::Mat newK;
-        cv::fisheye::estimateNewCameraMatrixForUndistortRectify(
-            K, D, img_size, cv::Mat::eye(3, 3, CV_64F), newK, 1.0);
-
-        cv::Mat map1, map2;
-        cv::fisheye::initUndistortRectifyMap(
-            K, D, cv::Mat::eye(3, 3, CV_64F),
-            newK, img_size, CV_32FC1, map1, map2);
-
-        postprocess_ = [map1, map2](const cv::Mat& img) {
-            cv::Mat out;
-            cv::remap(img, out, map1, map2,
-                      cv::INTER_LINEAR, cv::BORDER_CONSTANT);
-            return out;
-        };
     }
 }
 
@@ -104,7 +112,7 @@ cv::Mat ImageProvider::take_image() {
 
     cv::Mat img;
 
-    if (camera_ == CameraType::CV2) {
+    if (camera_ == CameraType::CV2 || camera_ == CameraType::PI || camera_ == CameraType::PI_FISH) {
         cap_ >> img;
         if (img.empty())
             throw std::runtime_error("Failed to capture image");
@@ -127,8 +135,11 @@ cv::Mat ImageProvider::take_image() {
 }
 
 void ImageProvider::quit() {
-    if (camera_ == CameraType::CV2) {
+    // if (camera_ == CameraType::CV2) {
+    //     cap_.release();
+    //     cv::destroyAllWindows();
+    // }
+    if (cap_.isOpened()) {
         cap_.release();
-        cv::destroyAllWindows();
     }
 }
