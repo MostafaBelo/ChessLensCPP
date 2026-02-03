@@ -43,6 +43,7 @@ LibCameraCapture::LibCameraCapture(int width, int height) {
         throw std::runtime_error("No sensor modes available");
 
     const auto &mode = sensorModes->front();
+    const libcamera::StreamConfiguration &cfg = stream_->configuration();
 
     libcamera::Rectangle crop(
         (mode.size.width  - cfg.size.width)  / 2,
