@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
         
         // Configure ChessLens
         ChessLensConfig config;
-        config.camera_interval = 1;
+        config.camera_interval = 0.2;
         config.context_delay = 5.0;  // 5 seconds
         config.context_continuous = true;
         config.game_out_path = dirname;

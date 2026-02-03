@@ -172,6 +172,7 @@ std::pair<cv::Mat, cv::Mat> ChessLensImage::warp() {
     warped_img_ = result.first;
     M_ = result.second;
     
+    cv::imwrite("warped.png", warped_img);
     return {warped_img_, M_};
 }
 
