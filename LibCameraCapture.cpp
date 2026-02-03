@@ -142,12 +142,12 @@ cv::Mat LibCameraCapture::capture() {
     cv::Mat frame = lastFrame_.clone();
     
     // Downscale if needed
-    if (targetWidth_ > 0 && targetHeight_ > 0 && 
-        (frame.cols != targetWidth_ || frame.rows != targetHeight_)) {
-        cv::Mat resized;
-        cv::resize(frame, resized, cv::Size(targetWidth_, targetHeight_), 0, 0, cv::INTER_LINEAR);
-        return resized;
-    }
+    // if (targetWidth_ > 0 && targetHeight_ > 0 && 
+    //     (frame.cols != targetWidth_ || frame.rows != targetHeight_)) {
+    //     cv::Mat resized;
+    //     cv::resize(frame, resized, cv::Size(targetWidth_, targetHeight_), 0, 0, cv::INTER_LINEAR);
+    //     return resized;
+    // }
     
     return frame;
 }
