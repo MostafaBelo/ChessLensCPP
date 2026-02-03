@@ -41,8 +41,8 @@ std::vector<std::string> ImageProvider::load_images(const std::string& dir) {
 
 void ImageProvider::setup_pi_camera() {
     // piCam_ = std::make_unique<LibCameraCapture>(1280, 720);
-    // piCam_ = std::make_unique<LibCameraCapture>(1920, 1080);
-    piCam_ = std::make_unique<LibCameraCapture>(2500, 1900);
+    piCam_ = std::make_unique<LibCameraCapture>(1920, 1080);
+    // piCam_ = std::make_unique<LibCameraCapture>(2592, 1944);
 
     // // Raspberry Pi cameras via libcamera/V4L2 
     // // Usually index 0, but we force V4L2 backend
@@ -142,6 +142,7 @@ cv::Mat ImageProvider::take_image() {
         img = postprocess_(img);
 
     last_img_time_ = std::chrono::steady_clock::now();
+    cv::imwrite("original_image.png", img);
     return img;
 }
 

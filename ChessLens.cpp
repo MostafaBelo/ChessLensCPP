@@ -269,8 +269,6 @@ std::vector<float> ChessLensGame1::operate() {
 std::vector<float> ChessLensGame1::set_img(const cv::Mat& img) {
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    cv::imwrite("original_image.png", img);
-    
     current_img_->load_image(img);
     
     auto t2 = std::chrono::high_resolution_clock::now();
