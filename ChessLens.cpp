@@ -243,7 +243,7 @@ ChessLensGame1::ChessLensGame1(const ChessLensConfig& config,
     : board_flag(false), config_(config) {
     
     camera_ = std::make_unique<ImageProvider>(
-        CameraType::PI, config.camera_interval);
+        CameraType::PI_FISH, config.camera_interval);
     
     current_img_ = std::make_unique<ChessLensImage>(
         piece_detector_path, occlusion_detector_path);
