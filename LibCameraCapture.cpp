@@ -36,20 +36,14 @@ LibCameraCapture::LibCameraCapture(int width, int height) {
     allocator_ = std::make_unique<FrameBufferAllocator>(camera_);
     allocator_->allocate(stream_);
 
-    const auto &sensorModes = camera_->properties().get(
-        libcamera::properties::SensorModes);
-
-    if (!sensorModes || sensorModes->empty())
-        throw std::runtime_error("No sensor modes available");
-
-    const auto &mode = sensorModes->front();
-    const libcamera::StreamConfiguration &cfg = stream_->configuration();
+    const libcamera::Size &sensorSize = streamConfig.sensorSize;
+    const libcamera::Size &outputSize = streamConfig.size;
 
     libcamera::Rectangle crop(
-        (mode.size.width  - cfg.size.width)  / 2,
-        (mode.size.height - cfg.size.height) / 2,
-        cfg.size.width,
-        cfg.size.height
+        (sensorSize.width  - outputSize.width)  / 2,
+        (sensorSize.height - outputSize.height) / 2,
+        outputSize.width,
+        outputSize.height
     );
 
     for (const auto &buffer : allocator_->buffers(stream_)) {
