@@ -1,0 +1,1 @@
+cmake --build ./build -j$(nproc) && ./build/chesslens_main

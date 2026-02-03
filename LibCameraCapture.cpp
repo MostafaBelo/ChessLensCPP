@@ -19,13 +19,17 @@ LibCameraCapture::LibCameraCapture(int width, int height) {
     camera_->acquire();
 
     std::unique_ptr<CameraConfiguration> config =
-        camera_->generateConfiguration({ StreamRole::Viewfinder });
+        camera_->generateConfiguration({ StreamRole::StillCapture });
 
     StreamConfiguration &streamConfig = config->at(0);
+    std::cout << "Default viewfinder configuration is: " << streamConfig.toString() << std::endl;
     streamConfig.size.width = width;
     streamConfig.size.height = height;
     streamConfig.pixelFormat = formats::RGB888;
     streamConfig.bufferCount = 4;
+    std::cout << "Adjusted viewfinder configuration is: " << streamConfig.toString() << std::endl;
+
+    // config->transform = Transform::Identity;
 
     if (config->validate() == CameraConfiguration::Invalid)
         throw std::runtime_error("Invalid camera configuration");
@@ -36,22 +40,15 @@ LibCameraCapture::LibCameraCapture(int width, int height) {
     allocator_ = std::make_unique<FrameBufferAllocator>(camera_);
     allocator_->allocate(stream_);
 
-    const libcamera::Size *pixelArray =
-        camera_->properties().get(libcamera::properties::PixelArraySize);
+    // auto pixelArray = camera_->properties().get(libcamera::properties::PixelArraySize);
+    // const libcamera::Size &outputSize = streamConfig.size;
 
-    if (!pixelArray) {
-        throw std::runtime_error("PixelArraySize not available");
-    }
-
-    // const libcamera::Size &sensorSize = streamConfig.sensorSize;
-    const libcamera::Size &outputSize = streamConfig.size;
-
-    libcamera::Rectangle crop(
-        (pixelArray->width  - outputSize.width)  / 2,
-        (pixelArray->height - outputSize.height) / 2,
-        outputSize.width,
-        outputSize.height
-    );
+    // libcamera::Rectangle crop(
+    //     (pixelArray->width  - outputSize.width)  / 2,
+    //     (pixelArray->height - outputSize.height) / 2,
+    //     outputSize.width,
+    //     outputSize.height
+    // );
 
     for (const auto &buffer : allocator_->buffers(stream_)) {
         std::unique_ptr<Request> request = camera_->createRequest();
@@ -60,7 +57,7 @@ LibCameraCapture::LibCameraCapture(int width, int height) {
         request->controls().set(libcamera::controls::AeEnable, true);
         request->controls().set(libcamera::controls::AwbEnable, true);
 
-        request->controls().set(libcamera::controls::ScalerCrop, crop);
+        // request->controls().set(libcamera::controls::ScalerCrop, crop);
 
         request->addBuffer(stream_, buffer.get());
         requests_.push_back(std::move(request));
@@ -68,19 +65,6 @@ LibCameraCapture::LibCameraCapture(int width, int height) {
 
     camera_->requestCompleted.connect(this, &LibCameraCapture::requestComplete);
 
-    // libcamera::ControlList controls;
-
-    // controls.set(libcamera::controls::AeEnable, true);
-    // controls.set(libcamera::controls::AwbEnable, true);
-
-    // // Optional: force faster convergence
-    // controls.set(libcamera::controls::AeExposureMode,
-    //             libcamera::controls::ExposureNormal);
-
-    // controls.set(libcamera::controls::AeMeteringMode,
-    //             libcamera::controls::MeteringCentreWeighted);
-
-    // camera_->controls = controls;
 
     camera_->start();
 
@@ -91,6 +75,10 @@ LibCameraCapture::LibCameraCapture(int width, int height) {
 
     for (auto &req : requests_)
         camera_->queueRequest(req.get());
+
+    // Wait for AE to converge: discard first 10–15 frames
+    for (int i = 0; i < 10; ++i)
+        capture();
 }
 
 LibCameraCapture::~LibCameraCapture() {
