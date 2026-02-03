@@ -166,17 +166,17 @@ int main(int argc, char** argv) {
         // Print timing statistics
         std::cout << "\n=== Performance Statistics ===\n";
         std::cout << "Avg Image Loading:      " 
-                  << (game1.avg_times.load * 1000.0 / frame_count) << " ms\n";
+                  << (game1.avg_times.load * 1000.0 / game1.avg_times.load_count) << " ms\n";
         std::cout << "Avg Board Detection:    " 
-                  << (game1.avg_times.board_detection * 1000.0 / frame_count) << " ms\n";
+                  << (game1.avg_times.board_detection * 1000.0 / game1.avg_times.board_count) << " ms\n";
         std::cout << "Avg Wakeup:             " 
-                  << (game1.avg_times.wakeup * 1000.0 / frame_count) << " ms\n";
+                  << (game1.avg_times.wakeup * 1000.0 / game1.avg_times.wakeup_count) << " ms\n";
         std::cout << "Avg Occlusion:          " 
-                  << (game1.avg_times.occlusion * 1000.0 / frame_count) << " ms\n";
+                  << (game1.avg_times.occlusion * 1000.0 / game1.avg_times.occlusion_count) << " ms\n";
         std::cout << "Avg Piece Recognition:  " 
-                  << (game1.avg_times.piece_recognition * 1000.0 / frame_count) << " ms\n";
+                  << (game1.avg_times.piece_recognition * 1000.0 / game1.avg_times.piece_count) << " ms\n";
         std::cout << "Avg HMM:                " 
-                  << (game2.avg_times.hmm * 1000.0 / frame_count) << " ms\n";
+                  << (game2.avg_times.hmm * 1000.0 / game2.avg_times.hmm_count) << " ms\n";
         std::cout << "\n";
         std::cout << "Avg Frame Time:         " << (avg_frame * 1000.0) << " ms\n";
         std::cout << "Frame Count:            " << frame_count << "\n";

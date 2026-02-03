@@ -172,7 +172,7 @@ std::pair<cv::Mat, cv::Mat> ChessLensImage::warp() {
     warped_img_ = result.first;
     M_ = result.second;
     
-    cv::imwrite("warped.png", warped_img);
+    cv::imwrite("Images/warped.png", warped_img_);
     return {warped_img_, M_};
 }
 
@@ -306,6 +306,7 @@ std::vector<float> ChessLensGame1::process_img() {
     if (t_ % config_.bd_period == 0) {
         try {
             auto [new_corners, conf] = current_img_->detect_board();
+            avg_times.board_count++;
             
             if (board_detection_.empty()) {
                 board_detection_ = new_corners.clone();
@@ -330,6 +331,7 @@ std::vector<float> ChessLensGame1::process_img() {
     current_img_->board_detected_ = !board_detection_.empty();
     
     auto t2 = std::chrono::high_resolution_clock::now();
+    avg_times.board_detection += std::chrono::duration<double>(t2 - t1).count();
     
     // Wakeup Detection
     bool is_wakeup;
@@ -337,6 +339,7 @@ std::vector<float> ChessLensGame1::process_img() {
         is_wakeup = true;
     } else {
         is_wakeup = detect_wakeup();
+        avg_times.wakeup_count++;
     }
     
     cout << "Wakeup: " << (is_wakeup ? "True" : "False") << "\n";
@@ -346,25 +349,25 @@ std::vector<float> ChessLensGame1::process_img() {
     last_wakeup_ = t_;
     
     auto t3 = std::chrono::high_resolution_clock::now();
+    avg_times.wakeup += std::chrono::duration<double>(t3 - t2).count();
     
     // Occlusion Detection
     bool is_occluded = detect_occlusion();
+    avg_times.occlusion_count++;
     cout << "Occlusion: " << (is_occluded ? "True" : "False") << "\n";
     if (is_occluded) {
         return {};
     }
     
     auto t4 = std::chrono::high_resolution_clock::now();
+    avg_times.occlusion += std::chrono::duration<double>(t4 - t3).count();
     
     // Piece Recognition
     auto [piece_matrix, fen] = current_img_->recognize_pieces();
     auto probs = prep_probs(piece_matrix);
+    avg_time.piece_count++;
     
     auto t5 = std::chrono::high_resolution_clock::now();
-    
-    avg_times.board_detection += std::chrono::duration<double>(t2 - t1).count();
-    avg_times.wakeup += std::chrono::duration<double>(t3 - t2).count();
-    avg_times.occlusion += std::chrono::duration<double>(t4 - t3).count();
     avg_times.piece_recognition += std::chrono::duration<double>(t5 - t4).count();
     
     return probs;
@@ -502,6 +505,7 @@ void ChessLensGame2::operate(const std::vector<float>& piece_matrix) {
     auto t2 = std::chrono::high_resolution_clock::now();
     
     avg_times.hmm += std::chrono::duration<double>(t2 - t1).count();
+    avg_time.hmm_count++;
     avg_times.count++;
 }
 

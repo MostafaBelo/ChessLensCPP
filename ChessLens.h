@@ -55,6 +55,13 @@ struct AvgTimes {
     double occlusion = 0.0;
     double piece_recognition = 0.0;
     double hmm = 0.0;
+
+    int load_count = 0;
+    int board_count = 0;
+    int wakeup_count = 0;
+    int occlusion_count = 0;
+    int piece_count = 0;
+    int hmm_count = 0;
     
     int count = 0;
     
