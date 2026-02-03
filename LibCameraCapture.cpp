@@ -41,7 +41,27 @@ LibCameraCapture::LibCameraCapture(int width, int height) {
     }
 
     camera_->requestCompleted.connect(this, &LibCameraCapture::requestComplete);
+
+    libcamera::ControlList controls;
+
+    controls.set(libcamera::controls::AeEnable, true);
+    controls.set(libcamera::controls::AwbEnable, true);
+
+    // Optional: force faster convergence
+    controls.set(libcamera::controls::AeExposureMode,
+                libcamera::controls::ExposureNormal);
+
+    controls.set(libcamera::controls::AeMeteringMode,
+                libcamera::controls::MeteringCentreWeighted);
+
+    camera_->setControls(&controls);
+
     camera_->start();
+
+    for (int i = 0; i < 20; ++i) {
+        camera_->queueRequest(requests_[i % requests_.size()].get());
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
 
     for (auto &req : requests_)
         camera_->queueRequest(req.get());
@@ -87,6 +107,10 @@ void LibCameraCapture::requestComplete(Request *request) {
 }
 
 cv::Mat LibCameraCapture::capture() {
+    // static int skip = 5;
+    // if (skip-- > 0)
+    //     return cv::Mat();
+
     std::unique_lock<std::mutex> lock(mutex_);
     cv_.wait(lock, [&]{ return frameReady_; });
     frameReady_ = false;
