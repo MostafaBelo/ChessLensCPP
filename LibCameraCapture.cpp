@@ -59,6 +59,7 @@ void LibCameraCapture::requestComplete(Request *request) {
 
     const FrameBuffer *buffer = request->buffers().begin()->second;
     const FrameMetadata &metadata = buffer->metadata();
+    const libcamera::StreamConfiguration &cfg = stream_->configuration();
 
     const FrameBuffer::Plane &plane = buffer->planes()[0];
     void *data = mmap(nullptr, plane.length, PROT_READ | PROT_WRITE,
@@ -70,8 +71,8 @@ void LibCameraCapture::requestComplete(Request *request) {
     {
         std::lock_guard<std::mutex> lock(mutex_);
         lastFrame_ = cv::Mat(
-            metadata.height,
-            metadata.width,
+            cfg.size.height,
+            cfg.size.width,
             CV_8UC3,
             data
         ).clone();
