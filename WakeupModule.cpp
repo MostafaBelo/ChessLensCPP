@@ -52,14 +52,21 @@ bool WakeupModule::is_wakeup(const cv::Mat& img,
 
     std::optional<FrameHist> past_hist;
 
-    if (past_img.has_value()) {
-        // single histogram like Python version (note: Python code seems inconsistent here,
-        // but we replicate behavior)
-        FrameHist ph;
-        ph.push_back(compute_hist(*past_img));
-        past_hist = ph;
-    } else {
+    // if (past_img.has_value()) {
+    //     // single histogram like Python version (note: Python code seems inconsistent here,
+    //     // but we replicate behavior)
+    //     FrameHist ph;
+    //     ph.push_back(compute_hist(*past_img));
+    //     past_hist = ph;
+    // } else {
+    //     past_hist = past_frame_hist_;
+    // }
+
+    if (past_frame_hist_.has_value()) {
         past_hist = past_frame_hist_;
+    } else {
+        past_frame_hist_ = current_hist;
+        return True;
     }
 
     bool ret = true;
