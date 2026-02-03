@@ -4,6 +4,7 @@
 #include <vector>
 #include <functional>
 #include <chrono>
+#include "LibCameraCapture.h"
 
 enum class CameraType {
     PI,
@@ -26,6 +27,7 @@ private:
     double interval_;
     std::chrono::steady_clock::time_point last_img_time_;
     
+    std::unique_ptr<LibCameraCapture> piCam_;
     cv::VideoCapture cap_;
     std::vector<std::string> imgs_to_load_;
     std::function<cv::Mat(const cv::Mat&)> postprocess_;

@@ -40,18 +40,20 @@ std::vector<std::string> ImageProvider::load_images(const std::string& dir) {
 }
 
 void ImageProvider::setup_pi_camera() {
-    // Raspberry Pi cameras via libcamera/V4L2 
-    // Usually index 0, but we force V4L2 backend
-    cap_.open(0, cv::CAP_V4L2);
-    
-    if (!cap_.isOpened()) {
-        throw std::runtime_error("Failed to open Pi Camera via V4L2. Ensure libcamera is not hogging the device.");
-    }
+    piCam_ = std::make_unique<LibCameraCapture>(1280, 720);
 
-    // Set resolution (adjust to your Pi camera's native aspect ratio)
-    cap_.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
-    cap_.set(cv::CAP_PROP_FRAME_HEIGHT, 720);
-    cap_.set(cv::CAP_PROP_FPS, 30);
+    // // Raspberry Pi cameras via libcamera/V4L2 
+    // // Usually index 0, but we force V4L2 backend
+    // cap_.open(0, cv::CAP_V4L2);
+    
+    // if (!cap_.isOpened()) {
+    //     throw std::runtime_error("Failed to open Pi Camera via V4L2. Ensure libcamera is not hogging the device.");
+    // }
+
+    // // Set resolution (adjust to your Pi camera's native aspect ratio)
+    // cap_.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
+    // cap_.set(cv::CAP_PROP_FRAME_HEIGHT, 720);
+    // cap_.set(cv::CAP_PROP_FPS, 30);
 }
 
 ImageProvider::ImageProvider(CameraType camera,
@@ -112,11 +114,18 @@ cv::Mat ImageProvider::take_image() {
 
     cv::Mat img;
 
-    if (camera_ == CameraType::CV2 || camera_ == CameraType::PI || camera_ == CameraType::PI_FISH) {
+    if (camera_ == CameraType::CV2) {
         cap_ >> img;
         if (img.empty())
             throw std::runtime_error("Failed to capture image");
         cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
+    }
+
+    else if (camera_ == CameraType::PI || camera_ == CameraType::PI_FISH) {
+        img = piCam_->capture();
+        if (img.empty())
+            throw std::runtime_error("Failed to capture image");
+        // cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
     }
 
     else if (camera_ == CameraType::FILES) {

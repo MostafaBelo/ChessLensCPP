@@ -1,0 +1,91 @@
+#include "LibCameraCapture.h"
+#include <iostream>
+#include <cstring>
+
+using namespace libcamera;
+
+LibCameraCapture::LibCameraCapture(int width, int height) {
+    cameraManager_ = std::make_unique<CameraManager>();
+    cameraManager_->start();
+
+    if (cameraManager_->cameras().empty())
+        throw std::runtime_error("No cameras found");
+
+    camera_ = cameraManager_->cameras()[0];
+    camera_->acquire();
+
+    std::unique_ptr<CameraConfiguration> config =
+        camera_->generateConfiguration({ StreamRole::Viewfinder });
+
+    StreamConfiguration &streamConfig = config->at(0);
+    streamConfig.size.width = width;
+    streamConfig.size.height = height;
+    streamConfig.pixelFormat = formats::RGB888;
+    streamConfig.bufferCount = 4;
+
+    if (config->validate() == CameraConfiguration::Invalid)
+        throw std::runtime_error("Invalid camera configuration");
+
+    camera_->configure(config.get());
+    stream_ = streamConfig.stream();
+
+    allocator_ = std::make_unique<FrameBufferAllocator>(camera_);
+    allocator_->allocate(stream_);
+
+    for (const auto &buffer : allocator_->buffers(stream_)) {
+        std::unique_ptr<Request> request = camera_->createRequest();
+        request->addBuffer(stream_, buffer.get());
+        requests_.push_back(std::move(request));
+    }
+
+    camera_->requestCompleted.connect(this, &LibCameraCapture::requestComplete);
+    camera_->start();
+
+    for (auto &req : requests_)
+        camera_->queueRequest(req.get());
+}
+
+LibCameraCapture::~LibCameraCapture() {
+    camera_->stop();
+    camera_->release();
+    cameraManager_->stop();
+}
+
+void LibCameraCapture::requestComplete(Request *request) {
+    if (request->status() != Request::RequestComplete)
+        return;
+
+    const FrameBuffer *buffer = request->buffers().begin()->second;
+    const FrameMetadata &metadata = buffer->metadata();
+
+    const FrameBuffer::Plane &plane = buffer->planes()[0];
+    void *data = mmap(nullptr, plane.length, PROT_READ | PROT_WRITE,
+                      MAP_SHARED, plane.fd.get(), 0);
+
+    if (data == MAP_FAILED)
+        return;
+
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        lastFrame_ = cv::Mat(
+            metadata.height,
+            metadata.width,
+            CV_8UC3,
+            data
+        ).clone();
+        frameReady_ = true;
+    }
+
+    munmap(data, plane.length);
+    cv_.notify_one();
+
+    request->reuse(Request::ReuseBuffers);
+    camera_->queueRequest(request);
+}
+
+cv::Mat LibCameraCapture::capture() {
+    std::unique_lock<std::mutex> lock(mutex_);
+    cv_.wait(lock, [&]{ return frameReady_; });
+    frameReady_ = false;
+    return lastFrame_.clone();
+}
