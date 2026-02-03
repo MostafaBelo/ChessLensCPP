@@ -28,4 +28,7 @@ private:
     std::mutex mutex_;
     std::condition_variable cv_;
     bool frameReady_ = false;
+
+    int targetWidth_;
+    int targetHeight_;
 };
