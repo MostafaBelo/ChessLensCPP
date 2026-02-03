@@ -72,7 +72,7 @@ ImageProvider::ImageProvider(CameraType camera,
 
         if (camera_ == CameraType::PI_FISH) {
             // Load fisheye calibration
-            cv::FileStorage storage("fisheye_calibration.yaml", cv::FileStorage::READ);
+            cv::FileStorage storage("models/fisheye_calibration.yaml", cv::FileStorage::READ);
             if(storage.isOpened()) {
                 cv::Mat K, D;
                 cv::Size img_size;
