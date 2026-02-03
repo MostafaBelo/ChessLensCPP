@@ -9,7 +9,10 @@ option(USE_HTTP "Enable HTTP FEN updates via libcurl" ON)
 
 # Find required packages
 find_package(OpenCV REQUIRED)
+find_package(PkgConfig REQUIRED)
 find_package(CURL)
+
+pkg_check_modules(LIBCAMERA REQUIRED libcamera)
 
 # ONNX Runtime
 # Adjust the path to your ONNX Runtime installation
@@ -96,7 +99,16 @@ add_library(image_provider STATIC
     ImageProvider.cpp
     LibCameraCapture.cpp
 )
-target_link_libraries(image_provider ${OpenCV_LIBS})
+target_include_directories(image_provider PUBLIC
+    ${LIBCAMERA_INCLUDE_DIRS}
+)
+target_link_libraries(image_provider PUBLIC
+    ${OpenCV_LIBS}
+    ${LIBCAMERA_LIBRARIES}
+)
+target_compile_options(image_provider PUBLIC
+    ${LIBCAMERA_CFLAGS_OTHER}
+)
 
 # Board Detection
 add_library(board_detection STATIC
