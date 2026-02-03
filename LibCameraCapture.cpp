@@ -1,6 +1,8 @@
 #include "LibCameraCapture.h"
 #include <iostream>
 #include <cstring>
+#include <sys/mman.h>
+#include <unistd.h>
 
 using namespace libcamera;
 
