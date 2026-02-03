@@ -36,25 +36,30 @@ LibCameraCapture::LibCameraCapture(int width, int height) {
 
     for (const auto &buffer : allocator_->buffers(stream_)) {
         std::unique_ptr<Request> request = camera_->createRequest();
+
+        // Enable AE + AWB (CRITICAL)
+        request->controls().set(libcamera::controls::AeEnable, true);
+        request->controls().set(libcamera::controls::AwbEnable, true);
+
         request->addBuffer(stream_, buffer.get());
         requests_.push_back(std::move(request));
     }
 
     camera_->requestCompleted.connect(this, &LibCameraCapture::requestComplete);
 
-    libcamera::ControlList controls;
+    // libcamera::ControlList controls;
 
-    controls.set(libcamera::controls::AeEnable, true);
-    controls.set(libcamera::controls::AwbEnable, true);
+    // controls.set(libcamera::controls::AeEnable, true);
+    // controls.set(libcamera::controls::AwbEnable, true);
 
-    // Optional: force faster convergence
-    controls.set(libcamera::controls::AeExposureMode,
-                libcamera::controls::ExposureNormal);
+    // // Optional: force faster convergence
+    // controls.set(libcamera::controls::AeExposureMode,
+    //             libcamera::controls::ExposureNormal);
 
-    controls.set(libcamera::controls::AeMeteringMode,
-                libcamera::controls::MeteringCentreWeighted);
+    // controls.set(libcamera::controls::AeMeteringMode,
+    //             libcamera::controls::MeteringCentreWeighted);
 
-    camera_->setControls(&controls);
+    // camera_->controls = controls;
 
     camera_->start();
 
