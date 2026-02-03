@@ -501,7 +501,7 @@ void ChessLensGame2::operate(const std::vector<float>& piece_matrix) {
     
     // printBoard(piece_matrix);
     auto prepped = prep_probs(piece_matrix);
-    printBoard(prepped);
+    // printBoard(prepped);
 
     int timestep = context_model_->top_t() + 1;
     

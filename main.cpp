@@ -116,30 +116,27 @@ int main(int argc, char** argv) {
             
             // Process frame from camera
             auto probs = game1.operate();
-            auto t3 = std::chrono::high_resolution_clock::now();
-            cout << "Game1: " << std::chrono::duration<double>(t3 - t1).count() * 1000 << "\n";
+            auto t2 = std::chrono::high_resolution_clock::now();
+            cout << "Game1: " << std::chrono::duration<double>(t2 - t1).count() * 1000 << "\n";
             
             // Update bindings
             game2.update_bindings();
             
             // Check if we should stop (no more frames)
-            if (probs.empty()) {
+            if (!(probs.empty())) {
+                // Process probabilities through context model
+                game2.operate(probs);
+            } else {
                 // Check if this is end of video/images or just a filtered frame
                 if (game1.board_flag.get()) {
                     std::cout << "Board detection failed too many times. Stopping.\n";
                     break;
                 }
-                // Otherwise, just a filtered frame, continue
-                continue;
-            }
+            }            
+            auto t3 = std::chrono::high_resolution_clock::now();
+            cout << "Game2: " << std::chrono::duration<double>(t3 - t2).count() * 1000 << "\n";
             
-            // Process probabilities through context model
-            game2.operate(probs);
-            
-            auto t2 = std::chrono::high_resolution_clock::now();
-            cout << "Game2: " << std::chrono::duration<double>(t2 - t3).count() * 1000 << "\n";
-            
-            double frame_time = std::chrono::duration<double>(t2 - t1).count();
+            double frame_time = std::chrono::duration<double>(t3 - t1).count();
             frame_times.push_back(frame_time);
             
             // Optional: Print progress every N frames
@@ -169,19 +166,19 @@ int main(int argc, char** argv) {
         // Print timing statistics
         std::cout << "\n=== Performance Statistics ===\n";
         std::cout << "Avg Image Capturing:      " 
-                  << (game1.avg_times.img_capture * 1000.0 / game1.avg_times.img_capture_count) << " ms\n";
+                  << (game1.avg_times.img_capture * 1000.0 / game1.avg_times.img_capture_count) << " ms\t" << game1.avg_times.img_capture_count << "\n";
         std::cout << "Avg Image Loading:      " 
-                  << (game1.avg_times.load * 1000.0 / game1.avg_times.load_count) << " ms\n";
+                  << (game1.avg_times.load * 1000.0 / game1.avg_times.load_count) << " ms\t" << game1.avg_times.load_count << "\n";
         std::cout << "Avg Board Detection:    " 
-                  << (game1.avg_times.board_detection * 1000.0 / game1.avg_times.board_count) << " ms\n";
+                  << (game1.avg_times.board_detection * 1000.0 / game1.avg_times.board_count) << " ms\t" << game1.avg_times.board_count << "\n";
         std::cout << "Avg Wakeup:             " 
-                  << (game1.avg_times.wakeup * 1000.0 / game1.avg_times.wakeup_count) << " ms\n";
+                  << (game1.avg_times.wakeup * 1000.0 / game1.avg_times.wakeup_count) << " ms\t" << game1.avg_times.wakeup_count << "\n";
         std::cout << "Avg Occlusion:          " 
-                  << (game1.avg_times.occlusion * 1000.0 / game1.avg_times.occlusion_count) << " ms\n";
+                  << (game1.avg_times.occlusion * 1000.0 / game1.avg_times.occlusion_count) << " ms\t" << game1.avg_times.occlusion_count << "\n";
         std::cout << "Avg Piece Recognition:  " 
-                  << (game1.avg_times.piece_recognition * 1000.0 / game1.avg_times.piece_count) << " ms\n";
+                  << (game1.avg_times.piece_recognition * 1000.0 / game1.avg_times.piece_count) << " ms\t" << game1.avg_times.piece_count << "\n";
         std::cout << "Avg HMM:                " 
-                  << (game2.avg_times.hmm * 1000.0 / game2.avg_times.hmm_count) << " ms\n";
+                  << (game2.avg_times.hmm * 1000.0 / game2.avg_times.hmm_count) << " ms\t" << game2.avg_times.hmm_count << "\n";
         std::cout << "\n";
         std::cout << "Avg Frame Time:         " << (avg_frame * 1000.0) << " ms\n";
         std::cout << "Frame Count:            " << frame_count << "\n";
