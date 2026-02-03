@@ -36,12 +36,29 @@ LibCameraCapture::LibCameraCapture(int width, int height) {
     allocator_ = std::make_unique<FrameBufferAllocator>(camera_);
     allocator_->allocate(stream_);
 
+    const auto &sensorModes = camera_->properties().get(
+        libcamera::properties::SensorModes);
+
+    if (!sensorModes || sensorModes->empty())
+        throw std::runtime_error("No sensor modes available");
+
+    const auto &mode = sensorModes->front();
+
+    libcamera::Rectangle crop(
+        (mode.size.width  - cfg.size.width)  / 2,
+        (mode.size.height - cfg.size.height) / 2,
+        cfg.size.width,
+        cfg.size.height
+    );
+
     for (const auto &buffer : allocator_->buffers(stream_)) {
         std::unique_ptr<Request> request = camera_->createRequest();
 
         // Enable AE + AWB (CRITICAL)
         request->controls().set(libcamera::controls::AeEnable, true);
         request->controls().set(libcamera::controls::AwbEnable, true);
+
+        request->controls().set(libcamera::controls::ScalerCrop, crop);
 
         request->addBuffer(stream_, buffer.get());
         requests_.push_back(std::move(request));
