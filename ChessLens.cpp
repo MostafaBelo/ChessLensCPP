@@ -172,7 +172,7 @@ std::pair<cv::Mat, cv::Mat> ChessLensImage::warp() {
     warped_img_ = result.first;
     M_ = result.second;
     
-    cv::imwrite("Images/warped.png", warped_img_);
+    // cv::imwrite("Images/warped.png", warped_img_);
     return {warped_img_, M_};
 }
 
@@ -268,7 +268,7 @@ std::vector<float> ChessLensGame1::operate() {
     auto t2 = std::chrono::high_resolution_clock::now();
     avg_times.img_capture += std::chrono::duration<double>(t2 - t1).count();
     avg_times.img_capture_count++;
-    
+
     return set_img(img);
 }
 
