@@ -22,6 +22,8 @@ public:
     cv::Mat take_image();
     void quit();
 
+    double total_wait_time = 0.0;
+
 private:
     CameraType camera_;
     double interval_;

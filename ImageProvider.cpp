@@ -106,15 +106,18 @@ ImageProvider::ImageProvider(CameraType camera,
 }
 
 cv::Mat ImageProvider::take_image() {
+    auto now = std::chrono::steady_clock::now();
     if (last_img_time_ != std::chrono::steady_clock::time_point::min()) {
         auto elapsed = std::chrono::duration<double>(
-            std::chrono::steady_clock::now() - last_img_time_).count();
+            now - last_img_time_).count();
         if (interval_ > 0 && elapsed < interval_) {
+            auto sleep_period = interval_ - elapsed;
+            total_wait_time += sleep_period;
             std::this_thread::sleep_for(
-                std::chrono::duration<double>(interval_ - elapsed));
+                std::chrono::duration<double>(sleep_period));
         }
     }
-    last_img_time_ = std::chrono::steady_clock::now();
+    last_img_time_ = now;
 
     cv::Mat img;
 
