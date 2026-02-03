@@ -36,12 +36,19 @@ LibCameraCapture::LibCameraCapture(int width, int height) {
     allocator_ = std::make_unique<FrameBufferAllocator>(camera_);
     allocator_->allocate(stream_);
 
-    const libcamera::Size &sensorSize = streamConfig.sensorSize;
+    const libcamera::Size *pixelArray =
+        camera_->properties().get(libcamera::properties::PixelArraySize);
+
+    if (!pixelArray) {
+        throw std::runtime_error("PixelArraySize not available");
+    }
+
+    // const libcamera::Size &sensorSize = streamConfig.sensorSize;
     const libcamera::Size &outputSize = streamConfig.size;
 
     libcamera::Rectangle crop(
-        (sensorSize.width  - outputSize.width)  / 2,
-        (sensorSize.height - outputSize.height) / 2,
+        (pixelArray->width  - outputSize.width)  / 2,
+        (pixelArray->height - outputSize.height) / 2,
         outputSize.width,
         outputSize.height
     );
