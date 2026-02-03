@@ -94,6 +94,7 @@ target_link_libraries(context_models
 # Image Provider
 add_library(image_provider STATIC
     ImageProvider.cpp
+    LibCameraCapture.cpp
 )
 target_link_libraries(image_provider ${OpenCV_LIBS})
 
