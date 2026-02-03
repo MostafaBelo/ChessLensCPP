@@ -457,10 +457,10 @@ std::vector<float> ChessLensGame2::prep_probs(const std::vector<float>& probs) {
     std::vector<float> result(8 * 8 * 13);
     
     int k = 0;
-    if (orientation_ == Orientation::RIGHT) k = 3;  // rot90 k=-1 equivalent
-    else if (orientation_ == Orientation::LEFT) k = 1;
-    else if (orientation_ == Orientation::TOP) k = 2;
-    else if (orientation_ == Orientation::BOTTOM) k = 0;
+    if (orientation_ == Orientation::RIGHT) k = 1;
+    else if (orientation_ == Orientation::LEFT) k = 3;
+    else if (orientation_ == Orientation::TOP) k = 0;
+    else if (orientation_ == Orientation::BOTTOM) k = 2;
     
     // Apply rotation and -log transform
     for (int r = 0; r < 8; ++r) {
@@ -501,7 +501,7 @@ void ChessLensGame2::operate(const std::vector<float>& piece_matrix) {
     
     // printBoard(piece_matrix);
     auto prepped = prep_probs(piece_matrix);
-    // printBoard(prepped);
+    printBoard(prepped);
 
     int timestep = context_model_->top_t() + 1;
     
