@@ -160,6 +160,8 @@ public:
     // Performance tracking
     AvgTimes avg_times;
 
+    double sleep_time();
+
 private:
     std::unique_ptr<ImageProvider> camera_;
     std::unique_ptr<ChessLensImage> current_img_;

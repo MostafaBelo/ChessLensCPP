@@ -167,6 +167,8 @@ int main(int argc, char** argv) {
         std::cout << "\n=== Performance Statistics ===\n";
         std::cout << "Avg Image Capturing:      " 
                   << (game1.avg_times.img_capture * 1000.0 / game1.avg_times.img_capture_count) << " ms\t" << game1.avg_times.img_capture_count << "\n";
+        std::cout << "Avg Image Capturing Wait Time:      " 
+                  << (game1.sleep_time() * 1000.0 / game1.avg_times.img_capture_count) << " ms\t" << game1.avg_times.img_capture_count << "\n";
         std::cout << "Avg Image Loading:      " 
                   << (game1.avg_times.load * 1000.0 / game1.avg_times.load_count) << " ms\t" << game1.avg_times.load_count << "\n";
         std::cout << "Avg Board Detection:    " 

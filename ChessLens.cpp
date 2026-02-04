@@ -379,6 +379,10 @@ std::vector<float> ChessLensGame1::process_img() {
     return probs;
 }
 
+double ChessLensGame1::sleep_time() {
+    return camera_->total_wait_time;
+}
+
 void ChessLensGame1::quit() {
     camera_->quit();
 }
