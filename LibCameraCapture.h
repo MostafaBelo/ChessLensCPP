@@ -34,5 +34,5 @@ private:
     int targetHeight_;
 
     std::atomic<bool> running_{true};
-    std::atomic<int> pendingRequests_{0}
+    std::atomic<int> pendingRequests_{0};
 };

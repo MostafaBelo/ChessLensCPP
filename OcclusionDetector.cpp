@@ -12,11 +12,16 @@ OcclusionDetector::OcclusionDetector(const std::string& model_path)
     // session_options_.SetGraphOptimizationLevel(
     //     GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
 
+    std::vector<std::string> providers = Ort::GetAvailableProviders();
+    for (const auto& provider : providers) {
+        std::cout << provider << std::endl;
+    }
+
     int num_threads = std::thread::hardware_concurrency();
     session_options_.SetIntraOpNumThreads(num_threads);
     session_options_.SetExecutionMode(ExecutionMode::ORT_PARALLEL);
     session_options_.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
-    session_options_.AppendExecutionProvider("XNNPACK");
+    OrtSessionOptionsAppendExecutionProvider_ACL(session_options_, 0);
 
     session_ = Ort::Session(env_, model_path.c_str(), session_options_);
 
