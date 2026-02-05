@@ -70,7 +70,7 @@ PieceDetectorCNN::PieceDetectorCNN(const std::string& onnx_path)
     opts_.SetIntraOpNumThreads(num_threads);
     opts_.SetExecutionMode(ExecutionMode::ORT_PARALLEL);
     opts_.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
-    session_options.AppendExecutionProvider("XNNPACK");
+    opts_.AppendExecutionProvider("XNNPACK");
     
     // Create session after options are set
     session_ = Ort::Session(env_, onnx_path.c_str(), opts_);

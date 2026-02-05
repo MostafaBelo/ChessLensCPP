@@ -16,7 +16,7 @@ OcclusionDetector::OcclusionDetector(const std::string& model_path)
     session_options_.SetIntraOpNumThreads(num_threads);
     session_options_.SetExecutionMode(ExecutionMode::ORT_PARALLEL);
     session_options_.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
-    session_options.AppendExecutionProvider("XNNPACK");
+    session_options_.AppendExecutionProvider("XNNPACK");
 
     session_ = Ort::Session(env_, model_path.c_str(), session_options_);
 
