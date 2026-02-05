@@ -64,13 +64,16 @@ LibCameraCapture::LibCameraCapture(int width, int height): targetWidth_(width), 
 
     camera_->start();
 
-    for (int i = 0; i < 20; ++i) {
-        camera_->queueRequest(requests_[i % requests_.size()].get());
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    }
+    // for (int i = 0; i < 20; ++i) {
+    //     camera_->queueRequest(requests_[i % requests_.size()].get());
+    //     pendingRequests_++;
+    //     std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    // }
 
-    for (auto &req : requests_)
+    for (auto &req : requests_) {
         camera_->queueRequest(req.get());
+        pendingRequests_++;
+    }
 
     // Wait for AE to converge: discard first 10–15 frames
     for (int i = 0; i < 10; ++i)
@@ -82,7 +85,16 @@ LibCameraCapture::LibCameraCapture(int width, int height): targetWidth_(width), 
 LibCameraCapture::~LibCameraCapture() {
     running_ = false;
     
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    auto start = std::chrono::steady_clock::now();
+    while (pendingRequests_ > 0) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        
+        auto elapsed = std::chrono::steady_clock::now() - start;
+        if (elapsed > std::chrono::seconds(10)) {
+            std::cerr << "Warning: Timeout waiting for camera requests to complete" << std::endl;
+            break;
+        }
+    }
 
     camera_->stop();
     camera_->release();
@@ -90,8 +102,10 @@ LibCameraCapture::~LibCameraCapture() {
 }
 
 void LibCameraCapture::requestComplete(Request *request) {
-    if (request->status() != Request::RequestComplete)
+    if (request->status() != Request::RequestComplete) {
+        pendingRequests_--;
         return;
+    }
 
     const FrameBuffer *buffer = request->buffers().begin()->second;
     // const FrameMetadata &metadata = buffer->metadata();
@@ -132,6 +146,8 @@ void LibCameraCapture::requestComplete(Request *request) {
     if (running_) {
         request->reuse(Request::ReuseBuffers);
         camera_->queueRequest(request);
+    } else {
+        pendingRequests_--;
     }
 }
 
