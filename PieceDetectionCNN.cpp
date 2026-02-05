@@ -62,8 +62,13 @@ PieceDetectorCNN::PieceDetectorCNN(const std::string& onnx_path)
       session_(nullptr),  // Initialize with nullptr first
       opts_() {
     
-    opts_.SetIntraOpNumThreads(1);
-    opts_.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
+    // opts_.SetIntraOpNumThreads(1);
+    // opts_.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
+
+    int num_threads = std::thread::hardware_concurrency();
+    opts_.SetIntraOpNumThreads(num_threads);
+    session_options.SetExecutionMode(ExecutionMode::ORT_PARALLEL);
+    opts_.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
     
     // Create session after options are set
     session_ = Ort::Session(env_, onnx_path.c_str(), opts_);
