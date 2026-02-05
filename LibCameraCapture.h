@@ -31,4 +31,6 @@ private:
 
     int targetWidth_;
     int targetHeight_;
+
+    std::atomic<bool> running_{true};
 };

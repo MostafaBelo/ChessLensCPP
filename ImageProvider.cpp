@@ -154,6 +154,9 @@ void ImageProvider::quit() {
     //     cap_.release();
     //     cv::destroyAllWindows();
     // }
+    if (piCam_) {
+        piCam_.reset();
+    }
     if (cap_.isOpened()) {
         cap_.release();
     }

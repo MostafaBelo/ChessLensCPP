@@ -80,6 +80,10 @@ LibCameraCapture::LibCameraCapture(int width, int height): targetWidth_(width), 
 }
 
 LibCameraCapture::~LibCameraCapture() {
+    running_ = false;
+    
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
     camera_->stop();
     camera_->release();
     cameraManager_->stop();
@@ -125,8 +129,10 @@ void LibCameraCapture::requestComplete(Request *request) {
     munmap(data, plane.length);
     cv_.notify_one();
 
-    request->reuse(Request::ReuseBuffers);
-    camera_->queueRequest(request);
+    if (running_) {
+        request->reuse(Request::ReuseBuffers);
+        camera_->queueRequest(request);
+    }
 }
 
 cv::Mat LibCameraCapture::capture() {
