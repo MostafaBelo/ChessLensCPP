@@ -67,7 +67,7 @@ PieceDetectorCNN::PieceDetectorCNN(const std::string& onnx_path)
 
     int num_threads = std::thread::hardware_concurrency();
     opts_.SetIntraOpNumThreads(num_threads);
-    session_options.SetExecutionMode(ExecutionMode::ORT_PARALLEL);
+    opts_.SetExecutionMode(ExecutionMode::ORT_PARALLEL);
     opts_.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
     
     // Create session after options are set
