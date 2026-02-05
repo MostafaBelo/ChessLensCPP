@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <cmath>
 #include <cstring>
+#include <thread>
 
 void printBoardCNN(std::vector<float> board) {
     // Piece labels mapping to the 13 channels

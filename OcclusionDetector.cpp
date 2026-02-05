@@ -1,15 +1,21 @@
 #include "OcclusionDetector.h"
 #include <stdexcept>
 #include <cmath>
+#include <thread>
 
 OcclusionDetector::OcclusionDetector(const std::string& model_path)
     : env_(ORT_LOGGING_LEVEL_WARNING, "OcclusionDetector"),
       session_(nullptr),
       session_options_() {
 
-    session_options_.SetIntraOpNumThreads(1);
-    session_options_.SetGraphOptimizationLevel(
-        GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
+    // session_options_.SetIntraOpNumThreads(1);
+    // session_options_.SetGraphOptimizationLevel(
+    //     GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
+
+    int num_threads = std::thread::hardware_concurrency();
+    session_options_.SetIntraOpNumThreads(num_threads);
+    session_options_.SetExecutionMode(ExecutionMode::ORT_PARALLEL);
+    session_options_.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
 
     session_ = Ort::Session(env_, model_path.c_str(), session_options_);
 
